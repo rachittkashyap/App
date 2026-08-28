@@ -33,8 +33,20 @@
 instead of being emailed for real — open the Render "Logs" tab after registering/forgot-password
 to grab the link. Real SMTP sending gets wired up in Phase 9.
 
-## PHASE 3 — Dashboards & User Management (NEXT)
-## PHASE 4 — Course System
+## PHASE 3 — Dashboards & User Management ✅ DONE
+- [x] Student Dashboard layout (sidebar + nested routes): Dashboard, My Courses, My
+      Trainings, Assignments, Tests, Certificates, Payments, Profile, Change Password
+- [x] Admin Dashboard layout (sidebar + nested routes): Dashboard, Students, Courses,
+      Trainings, Assignments, Tests, Certificates, Payments, Reports
+- [x] Admin stats API (`GET /api/admin/stats`) — student counts live now, course/training/
+      payment counts are placeholders until those phases ship
+- [x] Admin Students list — search (name/email), filter (status/verified), pagination,
+      suspend/activate
+- [x] Profile edit (`PUT /api/users/profile`) — fully functional
+- [x] Change password (`PUT /api/users/change-password`) — fully functional, logs out
+      all sessions after change
+
+## PHASE 4 — Course System (NEXT)
 ## PHASE 5 — Training / Virtual Internship System
 ## PHASE 6 — Enrollment, Progress, Assignments, Tests
 ## PHASE 7 — Payments

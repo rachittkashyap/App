@@ -11,6 +11,8 @@ const { notFound, errorHandler } = require('./middleware/error');
 // const { apiLimiter } = require('./middleware/rateLimit');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
@@ -41,9 +43,11 @@ if (process.env.NODE_ENV !== 'test') {
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 // TODO (next phases): courses, trainings, assignments, tests,
-// payments, certificates, admin routes will be mounted here under /api/*
+// payments, certificates routes will be mounted here under /api/*
 
 // 404 + centralized error handler (must stay last)
 app.use(notFound);

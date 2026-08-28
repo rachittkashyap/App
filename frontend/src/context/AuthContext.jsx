@@ -71,6 +71,10 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const refreshUser = useCallback((updatedUser) => {
+    setUser(updatedUser);
+  }, []);
+
   const value = {
     user,
     accessToken,
@@ -78,6 +82,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     login,
     logout,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

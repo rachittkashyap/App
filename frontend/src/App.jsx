@@ -16,13 +16,32 @@ import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
 import VerifyCertificate from './pages/VerifyCertificate.jsx';
-import Dashboard from './pages/Dashboard.jsx';
 import Terms from './pages/Terms.jsx';
 import Privacy from './pages/Privacy.jsx';
 import RefundPolicy from './pages/RefundPolicy.jsx';
 import NotFound from './pages/NotFound.jsx';
 
-import AdminDashboard from './admin/Dashboard.jsx';
+import StudentLayout from './layouts/StudentLayout.jsx';
+import DashboardHome from './pages/student/DashboardHome.jsx';
+import MyCourses from './pages/student/MyCourses.jsx';
+import MyTrainings from './pages/student/MyTrainings.jsx';
+import Assignments from './pages/student/Assignments.jsx';
+import Tests from './pages/student/Tests.jsx';
+import Certificates from './pages/student/Certificates.jsx';
+import Payments from './pages/student/Payments.jsx';
+import Profile from './pages/student/Profile.jsx';
+import ChangePassword from './pages/student/ChangePassword.jsx';
+
+import AdminLayout from './layouts/AdminLayout.jsx';
+import AdminDashboardHome from './admin/DashboardHome.jsx';
+import AdminStudents from './admin/Students.jsx';
+import AdminCourses from './admin/Courses.jsx';
+import AdminTrainings from './admin/Trainings.jsx';
+import AdminAssignments from './admin/AdminAssignments.jsx';
+import AdminTests from './admin/AdminTests.jsx';
+import AdminCertificates from './admin/AdminCertificates.jsx';
+import AdminPayments from './admin/AdminPayments.jsx';
+import AdminReports from './admin/Reports.jsx';
 
 export default function App() {
   return (
@@ -49,19 +68,39 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <StudentLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="courses" element={<MyCourses />} />
+            <Route path="trainings" element={<MyTrainings />} />
+            <Route path="assignments" element={<Assignments />} />
+            <Route path="tests" element={<Tests />} />
+            <Route path="certificates" element={<Certificates />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="change-password" element={<ChangePassword />} />
+          </Route>
 
           <Route
             path="/admin"
             element={
               <AdminRoute>
-                <AdminDashboard />
+                <AdminLayout />
               </AdminRoute>
             }
-          />
+          >
+            <Route index element={<AdminDashboardHome />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="courses" element={<AdminCourses />} />
+            <Route path="trainings" element={<AdminTrainings />} />
+            <Route path="assignments" element={<AdminAssignments />} />
+            <Route path="tests" element={<AdminTests />} />
+            <Route path="certificates" element={<AdminCertificates />} />
+            <Route path="payments" element={<AdminPayments />} />
+            <Route path="reports" element={<AdminReports />} />
+          </Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>
