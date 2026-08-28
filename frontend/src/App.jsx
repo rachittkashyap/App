@@ -7,6 +7,7 @@ import Footer from './components/Footer.jsx';
 
 import Home from './pages/Home.jsx';
 import Courses from './pages/Courses.jsx';
+import CourseDetail from './pages/CourseDetail.jsx';
 import Trainings from './pages/Trainings.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
@@ -36,6 +37,7 @@ import AdminLayout from './layouts/AdminLayout.jsx';
 import AdminDashboardHome from './admin/DashboardHome.jsx';
 import AdminStudents from './admin/Students.jsx';
 import AdminCourses from './admin/Courses.jsx';
+import CourseEditor from './admin/CourseEditor.jsx';
 import AdminTrainings from './admin/Trainings.jsx';
 import AdminAssignments from './admin/AdminAssignments.jsx';
 import AdminTests from './admin/AdminTests.jsx';
@@ -51,6 +53,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/trainings" element={<Trainings />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -94,6 +97,7 @@ export default function App() {
             <Route index element={<AdminDashboardHome />} />
             <Route path="students" element={<AdminStudents />} />
             <Route path="courses" element={<AdminCourses />} />
+            <Route path="courses/:id" element={<CourseEditor />} />
             <Route path="trainings" element={<AdminTrainings />} />
             <Route path="assignments" element={<AdminAssignments />} />
             <Route path="tests" element={<AdminTests />} />

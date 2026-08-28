@@ -46,8 +46,24 @@ to grab the link. Real SMTP sending gets wired up in Phase 9.
 - [x] Change password (`PUT /api/users/change-password`) — fully functional, logs out
       all sessions after change
 
-## PHASE 4 — Course System (NEXT)
-## PHASE 5 — Training / Virtual Internship System
+## PHASE 4 — Course System ✅ DONE
+- [x] Models: Course (with embedded Module/Lesson sub-schemas)
+- [x] Admin Course CRUD (create/read/update/delete, search, filter by status, pagination)
+- [x] Course Editor: add/delete modules, add/delete lessons (VIDEO/PDF/LINK/TEXT), publish/unpublish
+      (publish blocked until at least one module exists)
+- [x] Unique slug auto-generation with collision handling
+- [x] Public: Courses list (search/filter by level/pagination) + Course Details page
+- [x] Home page now shows real published courses instead of placeholders
+- [x] Admin stats now report real course/published counts
+
+**Note:** Module/lesson reordering endpoints exist on the backend
+(`PUT .../modules/reorder`, `PUT .../modules/:id/lessons/reorder`) but drag-and-drop UI for
+reordering, and file-upload-based PDF/video resources (vs. pasted URLs), are deferred —
+can be added as a polish pass later. Access-control that restricts lesson content to
+enrolled students only happens in Phase 6 (Enrollment) — for now published course content
+is publicly viewable, matching what real platforms typically show as a course preview.
+
+## PHASE 5 — Training / Virtual Internship System (NEXT)
 ## PHASE 6 — Enrollment, Progress, Assignments, Tests
 ## PHASE 7 — Payments
 ## PHASE 8 — Certificates

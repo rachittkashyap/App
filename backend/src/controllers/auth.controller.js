@@ -7,8 +7,13 @@ const authService = require('../services/auth.service');
 const REFRESH_COOKIE_NAME = 'refreshToken';
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  // Frontend (Netlify) and backend (Render) are on different domains, so this
+  // is a cross-site request. Cookies only survive cross-site XHR/fetch calls
+  // when SameSite=None + Secure - "lax" silently drops the cookie on every
+  // request except a top-level navigation, which caused refresh (and hence
+  // session restore on page reload) to always fail.
+  secure: true,
+  sameSite: 'none',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/api/auth',
 };
@@ -18,7 +23,7 @@ function setRefreshCookie(res, token) {
 }
 
 function clearRefreshCookie(res) {
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/auth' });
+  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/auth', secure: true, sameSite: 'none' });
 }
 
 async function register(req, res, next) {

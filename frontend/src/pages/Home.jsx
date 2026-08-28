@@ -1,6 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { listCoursesRequest } from '../services/courses';
 
 export default function Home() {
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    listCoursesRequest({ limit: 3 })
+      .then(({ data }) => setCourses(data.data.courses))
+      .catch(() => setCourses([]));
+  }, []);
+
   return (
     <div>
       <section className="hero container">
@@ -14,7 +24,17 @@ export default function Home() {
       <section className="section container">
         <h2>Featured Courses</h2>
         <div className="card-grid">
-          <div className="card">Course listings will appear here (Phase 4).</div>
+          {courses.length === 0 ? (
+            <div className="card">No published courses yet. Check back soon!</div>
+          ) : (
+            courses.map((course) => (
+              <Link to={`/courses/${course.slug}`} key={course.id} className="card">
+                <h3 style={{ marginTop: 0 }}>{course.title}</h3>
+                <p style={{ color: '#6b7280', fontSize: 14 }}>{course.description}</p>
+                <p style={{ fontWeight: 700 }}>{course.isPaid ? `₹${course.price}` : 'Free'}</p>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 
