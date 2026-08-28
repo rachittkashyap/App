@@ -5,7 +5,10 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 
 const { notFound, errorHandler } = require('./middleware/error');
-const { apiLimiter } = require('./middleware/rateLimit');
+// Rate limiting: disabled during active development/testing (was causing
+// false 429s while debugging auth flows). Re-enabled with tuned limits
+// in Phase 10 (Search, Reports, Audit, Hardening).
+// const { apiLimiter } = require('./middleware/rateLimit');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
 
@@ -33,8 +36,7 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-// Rate limiting on all /api routes
-app.use('/api', apiLimiter);
+// (rate limiting disabled for now - see note above)
 
 // Routes
 app.use('/api/health', healthRoutes);
