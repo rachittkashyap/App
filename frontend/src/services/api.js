@@ -21,11 +21,20 @@ export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
 }
 
+// Endpoints that should NEVER trigger a silent-refresh retry:
+// - /auth/refresh itself (otherwise a failed refresh retries itself forever)
+// - /auth/login, /auth/register (a 401/403 here means bad credentials /
+//   unverified email, not an expired access token - refreshing won't help)
+const NO_RETRY_PATHS = ['/auth/refresh', '/auth/login', '/auth/register'];
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry && onUnauthorized) {
+    const url = original?.url || '';
+    const isExcluded = NO_RETRY_PATHS.some((path) => url.includes(path));
+
+    if (error.response?.status === 401 && !original._retry && !isExcluded && onUnauthorized) {
       original._retry = true;
       const newToken = await onUnauthorized();
       if (newToken) {
