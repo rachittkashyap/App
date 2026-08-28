@@ -18,13 +18,22 @@
 - [x] Navbar, Footer, Loading components
 - [x] Public page shells: Home, Courses, Trainings, About, Contact, Login, Register, ForgotPassword, ResetPassword, VerifyEmail, VerifyCertificate, Terms, Privacy, RefundPolicy, NotFound
 
-## PHASE 2 — Authentication (NEXT)
-- [ ] User model, register/login/logout/refresh
-- [ ] Email verification, forgot/reset password
-- [ ] authenticateUser / authorizeAdmin middleware
-- [ ] AuthContext + ProtectedRoute + AdminRoute wired to real API
+## PHASE 2 — Authentication ✅ DONE
+- [x] User model (bcrypt password hashing, roles, verification/reset token fields)
+- [x] Register → email verification (dev mode: link logged to server console, real SMTP comes in Phase 9)
+- [x] Login → JWT access token + HTTP-only refresh token cookie
+- [x] Logout, refresh-token rotation with reuse detection
+- [x] Forgot password / reset password (does not reveal if email exists)
+- [x] authenticateUser / authorizeAdmin middleware
+- [x] AuthContext (silent refresh on load, 401 auto-retry) + ProtectedRoute + AdminRoute
+- [x] Login/Register/ForgotPassword/ResetPassword/VerifyEmail pages wired to real API
+- [x] Minimal Dashboard + Admin Dashboard placeholders (full versions in Phase 3)
 
-## PHASE 3 — Dashboards & User Management
+**Note on email:** verification/reset links are currently logged to the Render server logs
+instead of being emailed for real — open the Render "Logs" tab after registering/forgot-password
+to grab the link. Real SMTP sending gets wired up in Phase 9.
+
+## PHASE 3 — Dashboards & User Management (NEXT)
 ## PHASE 4 — Course System
 ## PHASE 5 — Training / Virtual Internship System
 ## PHASE 6 — Enrollment, Progress, Assignments, Tests

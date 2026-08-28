@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/error');
 const { apiLimiter } = require('./middleware/rateLimit');
 const healthRoutes = require('./routes/health.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -37,8 +38,9 @@ app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 
-// TODO (next phases): auth, courses, trainings, assignments, tests,
+// TODO (next phases): courses, trainings, assignments, tests,
 // payments, certificates, admin routes will be mounted here under /api/*
 
 // 404 + centralized error handler (must stay last)
