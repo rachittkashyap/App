@@ -2,7 +2,7 @@
 
 Full-stack MERN platform for online courses and virtual training/internship programs, being built phase-by-phase. See `PHASE_PLAN.md` for the full roadmap and current progress.
 
-## Status: Phase 6 complete — Enrollment, Progress, Assignments & Tests
+## Status: Phase 7 complete — Payments (Razorpay)
 
 ## Project Structure
 

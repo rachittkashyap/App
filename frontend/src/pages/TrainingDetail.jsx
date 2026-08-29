@@ -10,6 +10,7 @@ import {
 } from '../services/learning';
 import { useAuth } from '../context/AuthContext.jsx';
 import Loading from '../components/Loading.jsx';
+import BuyButton from '../components/BuyButton.jsx';
 
 function AssignmentBox({ training, dayId, task, enrollment, onSubmitted, isDone }) {
   const [text, setText] = useState('');
@@ -155,10 +156,19 @@ export default function TrainingDetail() {
         </Link>
       )}
 
-      {isAuthenticated && !enrollment && (
+      {isAuthenticated && !enrollment && !training.isPaid && (
         <button className="btn" onClick={handleEnroll} disabled={enrolling}>
           {enrolling ? 'Enrolling...' : 'Enroll Now'}
         </button>
+      )}
+
+      {isAuthenticated && !enrollment && training.isPaid && (
+        <BuyButton
+          itemType="TRAINING"
+          itemId={training.id}
+          price={training.price}
+          onSuccess={() => refreshStatus(training.id)}
+        />
       )}
 
       {isAuthenticated && enrollment && (

@@ -99,8 +99,26 @@ comes in Phase 6.
 builder UI (the engine itself is server-validated and working, just simple threshold-based
 for now), and payment-gated enrollment (Phase 7).
 
-## PHASE 7 — Payments (NEXT)
-## PHASE 8 — Certificates
+## PHASE 7 — Payments ✅ DONE
+- [x] Order model + Razorpay integration (order creation, checkout, signature verification)
+- [x] Webhook endpoint (`/api/payments/webhook`) with HMAC signature verification and
+      idempotent handling (mounted before the JSON body-parser so the raw bytes are
+      available for verification)
+- [x] Paid-course/training enroll flow: Buy Now → Razorpay order → checkout popup →
+      signature verified server-side → Enrollment created automatically
+- [x] Refund handling (admin-triggered via Razorpay refund API) + full transaction history
+- [x] Student: Payments page showing all orders and their status
+- [x] Admin: Payments list (search/filter by status/pagination) + revenue summary cards
+- [x] Admin stats now report real payment counts and total revenue
+
+**Setup required before payments work live:** the admin needs to add real Razorpay
+credentials to Render's environment variables — `PAYMENT_KEY_ID`, `PAYMENT_KEY_SECRET`
+(from the Razorpay dashboard), and `PAYMENT_WEBHOOK_SECRET` (set when creating a webhook
+in Razorpay pointing to `<backend-url>/api/payments/webhook`, subscribed to the
+`payment.captured` and `payment.failed` events). Until then, `Buy Now` returns a clear
+"payments not configured yet" error instead of crashing — free items are unaffected.
+
+## PHASE 8 — Certificates (NEXT)
 ## PHASE 9 — Email System (Queue-based)
 ## PHASE 10 — Search, Reports, Audit, Hardening
 ## PHASE 11 — Testing, Seed Data, Deployment

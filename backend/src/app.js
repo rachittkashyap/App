@@ -22,6 +22,9 @@ const submissionRoutes = require('./routes/submission.routes');
 const adminSubmissionRoutes = require('./routes/adminSubmission.routes');
 const testRoutes = require('./routes/test.routes');
 const adminTestRoutes = require('./routes/adminTest.routes');
+const paymentRoutes = require('./routes/payment.routes');
+const adminPaymentRoutes = require('./routes/adminPayment.routes');
+const webhookRoutes = require('./routes/webhook.routes');
 
 const app = express();
 
@@ -36,6 +39,11 @@ app.use(
     credentials: true,
   })
 );
+
+// Razorpay webhook MUST be mounted before express.json() - it needs the raw
+// request body (as bytes) to verify the HMAC signature. If express.json() ran
+// first it would consume/parse the stream and the raw bytes would be lost.
+app.use('/api/payments/webhook', webhookRoutes);
 
 // Body & cookies
 app.use(express.json({ limit: '2mb' }));
@@ -63,8 +71,10 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin/submissions', adminSubmissionRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/admin/tests', adminTestRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/admin/payments', adminPaymentRoutes);
 
-// TODO (next phases): payments, certificates routes will be mounted here under /api/*
+// TODO (next phase): certificates routes will be mounted here under /api/*
 
 // 404 + centralized error handler (must stay last)
 app.use(notFound);
