@@ -38,12 +38,25 @@ async function createOrder(req, res, next) {
 
     const amountInPaise = Math.round(item.price * 100);
 
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: `${itemType}_${itemId}_${req.user.id}_${Date.now()}`,
-      notes: { itemType, itemId: String(itemId), studentId: req.user.id },
-    });
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        // Razorpay's `receipt` field has a hard 40-character limit - the old
+        // itemType_itemId_studentId_timestamp format could exceed that and
+        // caused a 400 error. Full details go in `notes` instead, which has
+        // no such limit.
+        receipt: `rcpt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        notes: { itemType, itemId: String(itemId), studentId: req.user.id },
+      });
+    } catch (razorpayErr) {
+      // Surface Razorpay's actual reason (e.g. bad credentials, invalid field)
+      // instead of a generic 500 - makes future payment-gateway issues far
+      // easier to diagnose from the Render logs / frontend error message.
+      const description = razorpayErr?.error?.description || razorpayErr?.message || 'Payment gateway error';
+      throw new ApiError(502, `Could not create payment order: ${description}`, 'RAZORPAY_ERROR');
+    }
 
     const order = await Order.create({
       student: req.user.id,
