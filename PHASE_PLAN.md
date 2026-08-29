@@ -63,8 +63,23 @@ can be added as a polish pass later. Access-control that restricts lesson conten
 enrolled students only happens in Phase 6 (Enrollment) — for now published course content
 is publicly viewable, matching what real platforms typically show as a course preview.
 
-## PHASE 5 — Training / Virtual Internship System (NEXT)
-## PHASE 6 — Enrollment, Progress, Assignments, Tests
+## PHASE 5 — Training / Virtual Internship System ✅ DONE
+- [x] Models: Training (with embedded TrainingDay/TrainingTask sub-schemas)
+- [x] Admin Training CRUD (create/read/update/delete, search, filter by status, pagination)
+- [x] Day/Task editor: add/delete days, add/delete tasks (VIDEO/PDF/LINK/TEXT/ASSIGNMENT),
+      publish/unpublish (blocked until at least one day exists)
+- [x] Configurable duration (7/14/30 days, or any custom number)
+- [x] Unique slug auto-generation (shared logic pattern with courses)
+- [x] Public: Trainings list (search/filter by level/pagination) + Training Details page
+      with full day-wise schedule
+- [x] Home page now shows real published trainings instead of placeholders
+- [x] Admin stats now report real training/published-training counts
+
+**Note:** Same deferred items as Phase 4 — drag-and-drop day/task reordering UI and
+file-upload-based resources are a later polish pass; enrollment-gated content access
+comes in Phase 6.
+
+## PHASE 6 — Enrollment, Progress, Assignments, Tests (NEXT)
 ## PHASE 7 — Payments
 ## PHASE 8 — Certificates
 ## PHASE 9 — Email System (Queue-based)

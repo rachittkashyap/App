@@ -2,7 +2,7 @@
 
 Full-stack MERN platform for online courses and virtual training/internship programs, being built phase-by-phase. See `PHASE_PLAN.md` for the full roadmap and current progress.
 
-## Status: Phase 4 complete — Course System (+ cross-domain login-refresh bug fixed)
+## Status: Phase 5 complete — Training / Virtual Internship System
 
 ## Project Structure
 

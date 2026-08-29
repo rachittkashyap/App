@@ -15,6 +15,8 @@ const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const courseRoutes = require('./routes/course.routes');
 const adminCourseRoutes = require('./routes/adminCourse.routes');
+const trainingRoutes = require('./routes/training.routes');
+const adminTrainingRoutes = require('./routes/adminTraining.routes');
 
 const app = express();
 
@@ -49,8 +51,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/admin/courses', adminCourseRoutes);
+app.use('/api/trainings', trainingRoutes);
+app.use('/api/admin/trainings', adminTrainingRoutes);
 
-// TODO (next phases): trainings, assignments, tests,
+// TODO (next phases): assignments, tests,
 // payments, certificates routes will be mounted here under /api/*
 
 // 404 + centralized error handler (must stay last)

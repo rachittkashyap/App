@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Course = require('../models/Course');
+const Training = require('../models/Training');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 
@@ -80,15 +81,25 @@ async function activateStudent(req, res, next) {
 // what already exists: user counts.
 async function getStats(req, res, next) {
   try {
-    const [totalStudents, verifiedStudents, activeStudents, suspendedStudents, totalCourses, publishedCourses] =
-      await Promise.all([
-        User.countDocuments({ role: 'STUDENT' }),
-        User.countDocuments({ role: 'STUDENT', isVerified: true }),
-        User.countDocuments({ role: 'STUDENT', isActive: true }),
-        User.countDocuments({ role: 'STUDENT', isActive: false }),
-        Course.countDocuments({}),
-        Course.countDocuments({ isPublished: true }),
-      ]);
+    const [
+      totalStudents,
+      verifiedStudents,
+      activeStudents,
+      suspendedStudents,
+      totalCourses,
+      publishedCourses,
+      totalTrainings,
+      publishedTrainings,
+    ] = await Promise.all([
+      User.countDocuments({ role: 'STUDENT' }),
+      User.countDocuments({ role: 'STUDENT', isVerified: true }),
+      User.countDocuments({ role: 'STUDENT', isActive: true }),
+      User.countDocuments({ role: 'STUDENT', isActive: false }),
+      Course.countDocuments({}),
+      Course.countDocuments({ isPublished: true }),
+      Training.countDocuments({}),
+      Training.countDocuments({ isPublished: true }),
+    ]);
 
     success(res, {
       stats: {
@@ -98,8 +109,9 @@ async function getStats(req, res, next) {
         suspendedStudents,
         totalCourses,
         publishedCourses,
+        totalTrainings,
+        publishedTrainings,
         // Placeholders until their respective phases are built:
-        totalTrainings: 0,
         totalEnrollments: 0,
         totalCertificates: 0,
         totalPayments: 0,

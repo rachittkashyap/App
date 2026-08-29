@@ -9,6 +9,7 @@ import Home from './pages/Home.jsx';
 import Courses from './pages/Courses.jsx';
 import CourseDetail from './pages/CourseDetail.jsx';
 import Trainings from './pages/Trainings.jsx';
+import TrainingDetail from './pages/TrainingDetail.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
@@ -39,6 +40,7 @@ import AdminStudents from './admin/Students.jsx';
 import AdminCourses from './admin/Courses.jsx';
 import CourseEditor from './admin/CourseEditor.jsx';
 import AdminTrainings from './admin/Trainings.jsx';
+import TrainingEditor from './admin/TrainingEditor.jsx';
 import AdminAssignments from './admin/AdminAssignments.jsx';
 import AdminTests from './admin/AdminTests.jsx';
 import AdminCertificates from './admin/AdminCertificates.jsx';
@@ -55,6 +57,7 @@ export default function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/trainings" element={<Trainings />} />
+          <Route path="/trainings/:slug" element={<TrainingDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
@@ -99,6 +102,7 @@ export default function App() {
             <Route path="courses" element={<AdminCourses />} />
             <Route path="courses/:id" element={<CourseEditor />} />
             <Route path="trainings" element={<AdminTrainings />} />
+            <Route path="trainings/:id" element={<TrainingEditor />} />
             <Route path="assignments" element={<AdminAssignments />} />
             <Route path="tests" element={<AdminTests />} />
             <Route path="certificates" element={<AdminCertificates />} />
