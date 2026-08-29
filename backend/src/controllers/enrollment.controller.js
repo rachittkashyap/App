@@ -1,7 +1,9 @@
 const Enrollment = require('../models/Enrollment');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { findItem, getFlatSubItems, computeProgressPercent } = require('../utils/itemLookup');
+const { issueCertificateIfEligible } = require('../services/certificate.service');
 
 // POST /api/enrollments  { itemType, itemId }
 async function enroll(req, res, next) {
@@ -126,14 +128,32 @@ async function markItemComplete(req, res, next) {
         ? item.completionRules?.minLessonCompletionPercent ?? 100
         : item.completionRules?.minDayCompletionPercent ?? 100;
 
+    let justCompleted = false;
     if (progressPercent >= requiredPercent && !enrollment.isCompleted) {
       enrollment.isCompleted = true;
       enrollment.completedAt = new Date();
+      justCompleted = true;
     }
 
     await enrollment.save();
 
-    success(res, { enrollment: enrollment.toSafeJSON(), progressPercent });
+    let certificate = null;
+    if (justCompleted) {
+      const student = await User.findById(req.user.id);
+      certificate = await issueCertificateIfEligible({
+        studentId: req.user.id,
+        studentName: student.name,
+        itemType: enrollment.itemType,
+        itemId: enrollment.itemId,
+        itemTitle: item.title,
+      });
+    }
+
+    success(res, {
+      enrollment: enrollment.toSafeJSON(),
+      progressPercent,
+      certificate: certificate ? certificate.toSafeJSON() : null,
+    });
   } catch (err) {
     next(err);
   }

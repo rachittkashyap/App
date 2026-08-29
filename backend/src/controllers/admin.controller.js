@@ -3,6 +3,7 @@ const Course = require('../models/Course');
 const Training = require('../models/Training');
 const Enrollment = require('../models/Enrollment');
 const Order = require('../models/Order');
+const Certificate = require('../models/Certificate');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 
@@ -94,6 +95,7 @@ async function getStats(req, res, next) {
       publishedTrainings,
       totalEnrollments,
       paidOrders,
+      totalCertificates,
     ] = await Promise.all([
       User.countDocuments({ role: 'STUDENT' }),
       User.countDocuments({ role: 'STUDENT', isVerified: true }),
@@ -105,6 +107,7 @@ async function getStats(req, res, next) {
       Training.countDocuments({ isPublished: true }),
       Enrollment.countDocuments({}),
       Order.find({ status: 'PAID' }),
+      Certificate.countDocuments({ status: 'ISSUED' }),
     ]);
 
     const totalPayments = paidOrders.length;
@@ -123,8 +126,7 @@ async function getStats(req, res, next) {
         totalEnrollments,
         totalPayments,
         totalRevenue,
-        // Placeholder until Phase 8 ships:
-        totalCertificates: 0,
+        totalCertificates,
       },
     });
   } catch (err) {

@@ -45,6 +45,7 @@ import TrainingEditor from './admin/TrainingEditor.jsx';
 import AdminAssignments from './admin/AdminAssignments.jsx';
 import AdminTests from './admin/AdminTests.jsx';
 import AdminCertificates from './admin/AdminCertificates.jsx';
+import CertificateTemplate from './admin/CertificateTemplate.jsx';
 import AdminPayments from './admin/AdminPayments.jsx';
 import AdminReports from './admin/Reports.jsx';
 
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-certificate" element={<VerifyCertificate />} />
+          <Route path="/verify-certificate/:certificateId" element={<VerifyCertificate />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
@@ -108,6 +110,7 @@ export default function App() {
             <Route path="assignments" element={<AdminAssignments />} />
             <Route path="tests" element={<AdminTests />} />
             <Route path="certificates" element={<AdminCertificates />} />
+            <Route path="certificates/template" element={<CertificateTemplate />} />
             <Route path="payments" element={<AdminPayments />} />
             <Route path="reports" element={<AdminReports />} />
           </Route>

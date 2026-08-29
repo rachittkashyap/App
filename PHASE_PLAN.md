@@ -118,8 +118,26 @@ in Razorpay pointing to `<backend-url>/api/payments/webhook`, subscribed to the
 `payment.captured` and `payment.failed` events). Until then, `Buy Now` returns a clear
 "payments not configured yet" error instead of crashing — free items are unaffected.
 
-## PHASE 8 — Certificates (NEXT)
-## PHASE 9 — Email System (Queue-based)
+## PHASE 8 — Certificates ✅ DONE
+- [x] CertificateTemplate model (singleton) + admin template editor (org name, title, body
+      text with `{{studentName}}`/`{{itemTitle}}` placeholders, signature block, accent color)
+- [x] Certificate model with unique, non-predictable ID (`CERT-XXXXXXXXXXXX`)
+- [x] Auto-issued the moment an enrollment's progress hits its completion threshold
+      (hooked into the Phase 6 completion engine) - idempotent, no duplicates
+- [x] Server-side PDF generation (pdfkit) with embedded QR code linking to the verify page
+- [x] Public verification: `/verify-certificate/:certificateId` page +
+      `GET /api/certificates/verify/:certificateId` (no auth needed)
+- [x] Student: Certificates page with PDF download (auth-protected, blob download so the
+      JWT header is included)
+- [x] Admin: Certificates list (search/filter/pagination), revoke/reinstate
+- [x] Admin stats now report real issued-certificate counts
+
+**Deferred:** certificate background-image upload (needs the cloud storage that's part of
+the broader file-upload polish pass) - the template currently supports text/color
+branding, which covers the core "certificate looks professional and is verifiable"
+requirement from the spec.
+
+## PHASE 9 — Email System (Queue-based) (NEXT)
 ## PHASE 10 — Search, Reports, Audit, Hardening
 ## PHASE 11 — Testing, Seed Data, Deployment
 

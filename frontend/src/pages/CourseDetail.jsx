@@ -123,6 +123,11 @@ export default function CourseDetail() {
     try {
       const { data } = await markItemCompleteRequest(enrollment.id, lessonId);
       setEnrollment((prev) => ({ ...prev, ...data.enrollment, progressPercent: data.progressPercent }));
+      if (data.certificate) {
+        window.alert(
+          `🎉 Congratulations! You've completed this course and earned a certificate. Find it under Dashboard → Certificates.`
+        );
+      }
     } catch (err) {
       setEnrollError(err.response?.data?.message || 'Could not update progress.');
     }

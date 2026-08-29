@@ -25,6 +25,8 @@ const adminTestRoutes = require('./routes/adminTest.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminPaymentRoutes = require('./routes/adminPayment.routes');
 const webhookRoutes = require('./routes/webhook.routes');
+const certificateRoutes = require('./routes/certificate.routes');
+const adminCertificateRoutes = require('./routes/adminCertificate.routes');
 
 const app = express();
 
@@ -73,8 +75,11 @@ app.use('/api/tests', testRoutes);
 app.use('/api/admin/tests', adminTestRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin/payments', adminPaymentRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/admin/certificates', adminCertificateRoutes);
 
-// TODO (next phase): certificates routes will be mounted here under /api/*
+// All planned core phases are now mounted. Future additions (search/reports/
+// audit hardening in Phase 10, seed/testing in Phase 11) build on these.
 
 // 404 + centralized error handler (must stay last)
 app.use(notFound);
