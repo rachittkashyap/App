@@ -79,8 +79,27 @@ is publicly viewable, matching what real platforms typically show as a course pr
 file-upload-based resources are a later polish pass; enrollment-gated content access
 comes in Phase 6.
 
-## PHASE 6 — Enrollment, Progress, Assignments, Tests (NEXT)
-## PHASE 7 — Payments
+## PHASE 6 — Enrollment, Progress, Assignments, Tests ✅ DONE
+- [x] Enrollment model + free-enroll flow (`Enroll Now` blocked for paid items with a clear
+      "Payment integration coming in Phase 7" message; works immediately for free items)
+- [x] Progress tracking: mark lesson/task complete, live progress % on course/training pages
+      and My Courses / My Trainings, auto-marks item **completed** once the completion-rule
+      threshold is hit (configurable per course/training, defaults to 100%)
+- [x] Assignment submission (text and/or file-link) for ASSIGNMENT-type lessons/tasks —
+      inline submission form appears right in the course/training content
+- [x] Admin: review submissions (Pass/Fail + score + feedback) from `/admin/assignments`
+- [x] Test/Quiz system: admin creates tests tied to a course or training, adds
+      single/multi-choice questions with correct answers, publish/unpublish
+- [x] Server-side scoring only (correct answers never sent to the client before submission)
+- [x] Student: take test from course/training page, see score + pass/fail immediately,
+      full attempt history at `/dashboard/tests`
+- [x] Admin stats now report real enrollment counts
+
+**Deferred to later phases as originally planned:** a full drag/drop completion-rule
+builder UI (the engine itself is server-validated and working, just simple threshold-based
+for now), and payment-gated enrollment (Phase 7).
+
+## PHASE 7 — Payments (NEXT)
 ## PHASE 8 — Certificates
 ## PHASE 9 — Email System (Queue-based)
 ## PHASE 10 — Search, Reports, Audit, Hardening

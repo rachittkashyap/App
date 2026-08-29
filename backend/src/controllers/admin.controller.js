@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Training = require('../models/Training');
+const Enrollment = require('../models/Enrollment');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 
@@ -90,6 +91,7 @@ async function getStats(req, res, next) {
       publishedCourses,
       totalTrainings,
       publishedTrainings,
+      totalEnrollments,
     ] = await Promise.all([
       User.countDocuments({ role: 'STUDENT' }),
       User.countDocuments({ role: 'STUDENT', isVerified: true }),
@@ -99,6 +101,7 @@ async function getStats(req, res, next) {
       Course.countDocuments({ isPublished: true }),
       Training.countDocuments({}),
       Training.countDocuments({ isPublished: true }),
+      Enrollment.countDocuments({}),
     ]);
 
     success(res, {
@@ -111,8 +114,8 @@ async function getStats(req, res, next) {
         publishedCourses,
         totalTrainings,
         publishedTrainings,
+        totalEnrollments,
         // Placeholders until their respective phases are built:
-        totalEnrollments: 0,
         totalCertificates: 0,
         totalPayments: 0,
         totalRevenue: 0,

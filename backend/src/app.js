@@ -17,6 +17,11 @@ const courseRoutes = require('./routes/course.routes');
 const adminCourseRoutes = require('./routes/adminCourse.routes');
 const trainingRoutes = require('./routes/training.routes');
 const adminTrainingRoutes = require('./routes/adminTraining.routes');
+const enrollmentRoutes = require('./routes/enrollment.routes');
+const submissionRoutes = require('./routes/submission.routes');
+const adminSubmissionRoutes = require('./routes/adminSubmission.routes');
+const testRoutes = require('./routes/test.routes');
+const adminTestRoutes = require('./routes/adminTest.routes');
 
 const app = express();
 
@@ -53,9 +58,13 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/admin/courses', adminCourseRoutes);
 app.use('/api/trainings', trainingRoutes);
 app.use('/api/admin/trainings', adminTrainingRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/admin/submissions', adminSubmissionRoutes);
+app.use('/api/tests', testRoutes);
+app.use('/api/admin/tests', adminTestRoutes);
 
-// TODO (next phases): assignments, tests,
-// payments, certificates routes will be mounted here under /api/*
+// TODO (next phases): payments, certificates routes will be mounted here under /api/*
 
 // 404 + centralized error handler (must stay last)
 app.use(notFound);

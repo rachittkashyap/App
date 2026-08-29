@@ -33,6 +33,7 @@ import Certificates from './pages/student/Certificates.jsx';
 import Payments from './pages/student/Payments.jsx';
 import Profile from './pages/student/Profile.jsx';
 import ChangePassword from './pages/student/ChangePassword.jsx';
+import TakeTest from './pages/student/TakeTest.jsx';
 
 import AdminLayout from './layouts/AdminLayout.jsx';
 import AdminDashboardHome from './admin/DashboardHome.jsx';
@@ -83,6 +84,7 @@ export default function App() {
             <Route path="trainings" element={<MyTrainings />} />
             <Route path="assignments" element={<Assignments />} />
             <Route path="tests" element={<Tests />} />
+            <Route path="tests/:id" element={<TakeTest />} />
             <Route path="certificates" element={<Certificates />} />
             <Route path="payments" element={<Payments />} />
             <Route path="profile" element={<Profile />} />
