@@ -18,6 +18,7 @@ export default function Navbar() {
       <nav className="nav-links">
         <Link to="/courses">Courses</Link>
         <Link to="/trainings">Trainings</Link>
+        <Link to="/apply-internship">Apply for Internship</Link>
         <Link to="/about">About</Link>
         <Link to="/verify-certificate">Verify Certificate</Link>
 

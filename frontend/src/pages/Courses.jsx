@@ -8,6 +8,7 @@ export default function Courses() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
+  const [isPaid, setIsPaid] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -15,7 +16,7 @@ export default function Courses() {
     (page = 1) => {
       setLoading(true);
       setError('');
-      listCoursesRequest({ search, level: level || undefined, page, limit: 9 })
+      listCoursesRequest({ search, level: level || undefined, isPaid: isPaid || undefined, page, limit: 9 })
         .then(({ data }) => {
           setCourses(data.data.courses);
           setPagination(data.data.pagination);
@@ -23,7 +24,7 @@ export default function Courses() {
         .catch((err) => setError(err.response?.data?.message || 'Could not load courses.'))
         .finally(() => setLoading(false));
     },
-    [search, level]
+    [search, level, isPaid]
   );
 
   useEffect(() => {
@@ -46,6 +47,11 @@ export default function Courses() {
           <option value="BEGINNER">Beginner</option>
           <option value="INTERMEDIATE">Intermediate</option>
           <option value="ADVANCED">Advanced</option>
+        </select>
+        <select value={isPaid} onChange={(e) => setIsPaid(e.target.value)}>
+          <option value="">Free & Paid</option>
+          <option value="false">Free Only</option>
+          <option value="true">Paid Only</option>
         </select>
       </div>
 

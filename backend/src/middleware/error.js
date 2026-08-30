@@ -26,6 +26,13 @@ function errorHandler(err, req, res, next) {
     code = 'VALIDATION_ERROR';
   }
 
+  // Multer file upload errors (file too large, wrong type via fileFilter)
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    code = 'FILE_UPLOAD_ERROR';
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large (max 10MB)' : err.message;
+  }
+
   // Mongoose duplicate key
   if (err.code === 11000) {
     statusCode = 409;

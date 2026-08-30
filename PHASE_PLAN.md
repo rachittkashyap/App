@@ -157,7 +157,31 @@ variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) 
 environment variables - most reliably a transactional provider like Brevo, SendGrid, or
 Gmail with an App Password.
 
-## PHASE 10 — Search, Reports, Audit, Hardening (NEXT)
-## PHASE 11 — Testing, Seed Data, Deployment
+## PHASE 10 — Search, Reports, Audit, Hardening ✅ DONE
+- [x] Public search/filter: courses and trainings now support search, level, category
+      (backend), price (free/paid), and duration (trainings) filters
+- [x] Admin search/filter: students, courses, trainings, submissions, certificates, and
+      payments already had search/filter/pagination from earlier phases - verified all present
+- [x] Admin Reports (`/admin/reports`): revenue by month (last 6mo), enrollments by month,
+      certificates issued by month, most-popular courses/trainings, completion rate
+      (all-time), email delivery success/failure counts
+- [x] Audit log model + logging hooked into key admin actions: suspend/activate student,
+      publish/unpublish/delete course or training, revoke/reinstate certificate, refund
+      payment, review assignment submission — viewable at `/admin/audit-logs`
+- [x] Security hardening pass:
+      - Rate limiting re-enabled (was disabled in Phase 2 for testing) - 1000 req/15min
+        general, 30 req/15min on login/register/forgot-password/reset-password specifically
+      - NoSQL injection protection (`express-mongo-sanitize`) strips `$`/`.` operator
+        injection from body/query/params
+      - Multer upgraded to 2.x (1.x had known vulnerabilities) for the new file-upload feature
+      - CORS/helmet/cookie settings reviewed - unchanged, already correctly scoped
+
+**Also built in this phase:** a public internship application form
+(`/apply-internship` — "Novalynx Labs Virtual Internship Program") with resume upload
+(PDF/DOC, max 10MB, stored directly in MongoDB), full validation, and an admin management
+page (`/admin/internship-applications`) with search/filter/status-tracking and resume
+download.
+
+## PHASE 11 — Testing, Seed Data, Deployment (NEXT — final phase)
 
 (Full detail of each phase is in the original planning doc shared in chat — this file gets updated with checkboxes as each phase ships.)

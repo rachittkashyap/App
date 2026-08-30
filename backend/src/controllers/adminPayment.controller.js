@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { getRazorpayClient } = require('../config/razorpay');
+const { logAudit } = require('../utils/auditLog');
 
 // GET /api/admin/payments?status=&page=&limit=
 async function listPayments(req, res, next) {
@@ -71,6 +72,14 @@ async function refundPayment(req, res, next) {
     order.refundId = refund.id;
     order.refundedAt = new Date();
     await order.save();
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'REFUND_PAYMENT',
+      targetType: 'Order',
+      targetId: order._id,
+      details: `Refunded ₹${(order.amount / 100).toFixed(2)} for "${order.itemTitle}"`,
+    });
 
     success(res, { message: 'Refund initiated', order: order.toSafeJSON() });
   } catch (err) {

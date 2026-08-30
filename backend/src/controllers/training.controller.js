@@ -2,10 +2,10 @@ const Training = require('../models/Training');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 
-// GET /api/trainings?search=&category=&level=&isPaid=&page=&limit=
+// GET /api/trainings?search=&category=&level=&isPaid=&duration=&page=&limit=
 async function listPublishedTrainings(req, res, next) {
   try {
-    const { search = '', category, level, isPaid, page = 1, limit = 12 } = req.query;
+    const { search = '', category, level, isPaid, duration, page = 1, limit = 12 } = req.query;
 
     const query = { isPublished: true };
     if (search) query.title = new RegExp(search, 'i');
@@ -13,6 +13,7 @@ async function listPublishedTrainings(req, res, next) {
     if (level) query.level = level;
     if (isPaid === 'true') query.isPaid = true;
     if (isPaid === 'false') query.isPaid = false;
+    if (duration) query.durationDays = Number(duration);
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 12, 1), 100);

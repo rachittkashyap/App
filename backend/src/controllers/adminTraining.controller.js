@@ -2,6 +2,7 @@ const Training = require('../models/Training');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { slugify } = require('../utils/slugify');
+const { logAudit } = require('../utils/auditLog');
 
 async function generateUniqueSlug(title, excludeId) {
   const base = slugify(title);
@@ -122,6 +123,15 @@ async function deleteTraining(req, res, next) {
   try {
     const training = await Training.findByIdAndDelete(req.params.id);
     if (!training) throw new ApiError(404, 'Training not found', 'NOT_FOUND');
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'DELETE_TRAINING',
+      targetType: 'Training',
+      targetId: training._id,
+      details: `Deleted training "${training.title}"`,
+    });
+
     success(res, { message: 'Training deleted' });
   } catch (err) {
     next(err);
@@ -140,6 +150,15 @@ function setPublishState(isPublished) {
 
       training.isPublished = isPublished;
       await training.save();
+
+      logAudit({
+        adminId: req.user.id,
+        action: isPublished ? 'PUBLISH_TRAINING' : 'UNPUBLISH_TRAINING',
+        targetType: 'Training',
+        targetId: training._id,
+        details: `${isPublished ? 'Published' : 'Unpublished'} training "${training.title}"`,
+      });
+
       success(res, { training: training.toPublicJSON() });
     } catch (err) {
       next(err);

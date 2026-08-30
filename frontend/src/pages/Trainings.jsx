@@ -8,6 +8,8 @@ export default function Trainings() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
+  const [duration, setDuration] = useState('');
+  const [isPaid, setIsPaid] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -15,7 +17,14 @@ export default function Trainings() {
     (page = 1) => {
       setLoading(true);
       setError('');
-      listTrainingsRequest({ search, level: level || undefined, page, limit: 9 })
+      listTrainingsRequest({
+        search,
+        level: level || undefined,
+        duration: duration || undefined,
+        isPaid: isPaid || undefined,
+        page,
+        limit: 9,
+      })
         .then(({ data }) => {
           setTrainings(data.data.trainings);
           setPagination(data.data.pagination);
@@ -23,7 +32,7 @@ export default function Trainings() {
         .catch((err) => setError(err.response?.data?.message || 'Could not load trainings.'))
         .finally(() => setLoading(false));
     },
-    [search, level]
+    [search, level, duration, isPaid]
   );
 
   useEffect(() => {
@@ -46,6 +55,17 @@ export default function Trainings() {
           <option value="BEGINNER">Beginner</option>
           <option value="INTERMEDIATE">Intermediate</option>
           <option value="ADVANCED">Advanced</option>
+        </select>
+        <select value={duration} onChange={(e) => setDuration(e.target.value)}>
+          <option value="">Any Duration</option>
+          <option value="7">7 Days</option>
+          <option value="14">14 Days</option>
+          <option value="30">30 Days</option>
+        </select>
+        <select value={isPaid} onChange={(e) => setIsPaid(e.target.value)}>
+          <option value="">Free & Paid</option>
+          <option value="false">Free Only</option>
+          <option value="true">Paid Only</option>
         </select>
       </div>
 

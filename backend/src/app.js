@@ -3,12 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const { notFound, errorHandler } = require('./middleware/error');
-// Rate limiting: disabled during active development/testing (was causing
-// false 429s while debugging auth flows). Re-enabled with tuned limits
-// in Phase 10 (Search, Reports, Audit, Hardening).
-// const { apiLimiter } = require('./middleware/rateLimit');
+const { apiLimiter } = require('./middleware/rateLimit');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -28,6 +26,10 @@ const webhookRoutes = require('./routes/webhook.routes');
 const certificateRoutes = require('./routes/certificate.routes');
 const adminCertificateRoutes = require('./routes/adminCertificate.routes');
 const adminEmailLogRoutes = require('./routes/adminEmailLog.routes');
+const adminAuditLogRoutes = require('./routes/adminAuditLog.routes');
+const adminReportRoutes = require('./routes/adminReport.routes');
+const internshipApplicationRoutes = require('./routes/internshipApplication.routes');
+const adminInternshipApplicationRoutes = require('./routes/adminInternshipApplication.routes');
 
 const app = express();
 
@@ -53,12 +55,18 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Strip any $ or . prefixed keys from req.body/query/params - prevents
+// NoSQL injection via operator injection (e.g. { "email": { "$gt": "" } })
+app.use(mongoSanitize());
+
 // Logging
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-// (rate limiting disabled for now - see note above)
+// Rate limiting on all /api routes (auth endpoints get an additional,
+// stricter limiter - see auth.routes.js)
+app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/health', healthRoutes);
@@ -79,6 +87,10 @@ app.use('/api/admin/payments', adminPaymentRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/admin/certificates', adminCertificateRoutes);
 app.use('/api/admin/email-logs', adminEmailLogRoutes);
+app.use('/api/admin/audit-logs', adminAuditLogRoutes);
+app.use('/api/admin/reports', adminReportRoutes);
+app.use('/api/internship-applications', internshipApplicationRoutes);
+app.use('/api/admin/internship-applications', adminInternshipApplicationRoutes);
 
 // All planned core phases are now mounted. Future additions (search/reports/
 // audit hardening in Phase 10, seed/testing in Phase 11) build on these.

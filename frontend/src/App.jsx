@@ -14,6 +14,7 @@ import Trainings from './pages/Trainings.jsx';
 import TrainingDetail from './pages/TrainingDetail.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
+import InternshipApplication from './pages/InternshipApplication.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
@@ -43,6 +44,7 @@ import AdminStudents from './admin/Students.jsx';
 import AdminCourses from './admin/Courses.jsx';
 import CourseEditor from './admin/CourseEditor.jsx';
 import AdminTrainings from './admin/Trainings.jsx';
+import InternshipApplications from './admin/InternshipApplications.jsx';
 import TrainingEditor from './admin/TrainingEditor.jsx';
 import AdminAssignments from './admin/AdminAssignments.jsx';
 import AdminTests from './admin/AdminTests.jsx';
@@ -51,6 +53,7 @@ import CertificateTemplate from './admin/CertificateTemplate.jsx';
 import AdminPayments from './admin/AdminPayments.jsx';
 import EmailLogs from './admin/EmailLogs.jsx';
 import AdminReports from './admin/Reports.jsx';
+import AuditLogs from './admin/AuditLogs.jsx';
 
 export default function App() {
   return (
@@ -67,6 +70,7 @@ export default function App() {
           <Route path="/trainings/:slug" element={<TrainingDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/apply-internship" element={<InternshipApplication />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -112,6 +116,7 @@ export default function App() {
             <Route path="courses/:id" element={<CourseEditor />} />
             <Route path="trainings" element={<AdminTrainings />} />
             <Route path="trainings/:id" element={<TrainingEditor />} />
+            <Route path="internship-applications" element={<InternshipApplications />} />
             <Route path="assignments" element={<AdminAssignments />} />
             <Route path="tests" element={<AdminTests />} />
             <Route path="certificates" element={<AdminCertificates />} />
@@ -119,6 +124,7 @@ export default function App() {
             <Route path="payments" element={<AdminPayments />} />
             <Route path="email-logs" element={<EmailLogs />} />
             <Route path="reports" element={<AdminReports />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

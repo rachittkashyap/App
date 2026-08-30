@@ -6,6 +6,7 @@ const Order = require('../models/Order');
 const Certificate = require('../models/Certificate');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
+const { logAudit } = require('../utils/auditLog');
 
 // GET /api/admin/students?search=&status=&page=&limit=
 async function listStudents(req, res, next) {
@@ -57,6 +58,14 @@ async function suspendStudent(req, res, next) {
     user.refreshTokenHash = undefined; // force logout everywhere
     await user.save();
 
+    logAudit({
+      adminId: req.user.id,
+      action: 'SUSPEND_STUDENT',
+      targetType: 'User',
+      targetId: user._id,
+      details: `Suspended ${user.email}`,
+    });
+
     success(res, { message: 'Student suspended', user: user.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -71,6 +80,14 @@ async function activateStudent(req, res, next) {
     }
     user.isActive = true;
     await user.save();
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'ACTIVATE_STUDENT',
+      targetType: 'User',
+      targetId: user._id,
+      details: `Activated ${user.email}`,
+    });
 
     success(res, { message: 'Student activated', user: user.toSafeJSON() });
   } catch (err) {

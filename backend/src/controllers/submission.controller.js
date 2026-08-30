@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { findItem, getFlatSubItems } = require('../utils/itemLookup');
 const { sendSubmissionReviewedEmail } = require('../services/email.service');
+const { logAudit } = require('../utils/auditLog');
 
 // POST /api/submissions  { itemType, itemId, groupId, subItemId, textContent, fileUrl }
 async function submitAssignment(req, res, next) {
@@ -125,6 +126,14 @@ async function reviewSubmission(req, res, next) {
         console.error('Failed to queue submission-reviewed email:', err.message)
       );
     }
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'REVIEW_SUBMISSION',
+      targetType: 'Submission',
+      targetId: submission._id,
+      details: `Marked submission ${status} for ${student?.email || 'student'}`,
+    });
 
     success(res, { submission });
   } catch (err) {

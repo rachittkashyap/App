@@ -5,6 +5,7 @@ const links = [
   { to: '/admin/students', label: 'Students' },
   { to: '/admin/courses', label: 'Courses' },
   { to: '/admin/trainings', label: 'Trainings' },
+  { to: '/admin/internship-applications', label: 'Internship Applications' },
   { to: '/admin/assignments', label: 'Assignments' },
   { to: '/admin/tests', label: 'Tests' },
   { to: '/admin/certificates', label: 'Certificates' },

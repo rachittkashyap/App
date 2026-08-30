@@ -2,6 +2,7 @@ const Certificate = require('../models/Certificate');
 const CertificateTemplate = require('../models/CertificateTemplate');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
+const { logAudit } = require('../utils/auditLog');
 
 // GET /api/admin/certificates?search=&status=&page=&limit=
 async function listCertificates(req, res, next) {
@@ -48,6 +49,14 @@ async function revokeCertificate(req, res, next) {
     certificate.revokedAt = new Date();
     await certificate.save();
 
+    logAudit({
+      adminId: req.user.id,
+      action: 'REVOKE_CERTIFICATE',
+      targetType: 'Certificate',
+      targetId: certificate._id,
+      details: `Revoked certificate ${certificate.certificateId} (${certificate.studentName})`,
+    });
+
     success(res, { certificate: certificate.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -63,6 +72,14 @@ async function reinstateCertificate(req, res, next) {
     certificate.status = 'ISSUED';
     certificate.revokedAt = undefined;
     await certificate.save();
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'REINSTATE_CERTIFICATE',
+      targetType: 'Certificate',
+      targetId: certificate._id,
+      details: `Reinstated certificate ${certificate.certificateId} (${certificate.studentName})`,
+    });
 
     success(res, { certificate: certificate.toSafeJSON() });
   } catch (err) {

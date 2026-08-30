@@ -2,6 +2,7 @@ const Course = require('../models/Course');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { slugify } = require('../utils/slugify');
+const { logAudit } = require('../utils/auditLog');
 
 async function generateUniqueSlug(title, excludeId) {
   const base = slugify(title);
@@ -121,6 +122,15 @@ async function deleteCourse(req, res, next) {
   try {
     const course = await Course.findByIdAndDelete(req.params.id);
     if (!course) throw new ApiError(404, 'Course not found', 'NOT_FOUND');
+
+    logAudit({
+      adminId: req.user.id,
+      action: 'DELETE_COURSE',
+      targetType: 'Course',
+      targetId: course._id,
+      details: `Deleted course "${course.title}"`,
+    });
+
     success(res, { message: 'Course deleted' });
   } catch (err) {
     next(err);
@@ -139,6 +149,15 @@ function setPublishState(isPublished) {
 
       course.isPublished = isPublished;
       await course.save();
+
+      logAudit({
+        adminId: req.user.id,
+        action: isPublished ? 'PUBLISH_COURSE' : 'UNPUBLISH_COURSE',
+        targetType: 'Course',
+        targetId: course._id,
+        details: `${isPublished ? 'Published' : 'Unpublished'} course "${course.title}"`,
+      });
+
       success(res, { course: course.toPublicJSON() });
     } catch (err) {
       next(err);
