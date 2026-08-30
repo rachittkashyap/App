@@ -12,17 +12,217 @@ import {
 import { adminListCoursesRequest } from '../services/courses';
 import { adminListTrainingsRequest } from '../services/trainings';
 import Loading from '../components/Loading.jsx';
+import Modal from '../components/Modal.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+
+function AddQuestionModal({ onClose, onAdd }) {
+  const [questionText, setQuestionText] = useState('');
+  const [options, setOptions] = useState(['', '']);
+  const [correctIndexes, setCorrectIndexes] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  function updateOption(index, value) {
+    const next = [...options];
+    next[index] = value;
+    setOptions(next);
+  }
+
+  function addOption() {
+    setOptions([...options, '']);
+  }
+
+  function removeOption(index) {
+    setOptions(options.filter((_, i) => i !== index));
+    setCorrectIndexes(correctIndexes.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i)));
+  }
+
+  function toggleCorrect(index) {
+    setCorrectIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+
+    const cleanOptions = options.map((o) => o.trim()).filter(Boolean);
+    if (!questionText.trim() || cleanOptions.length < 2) {
+      setError('Enter a question and at least 2 options.');
+      return;
+    }
+    if (correctIndexes.length === 0) {
+      setError('Mark at least one option as correct.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onAdd({
+        questionText,
+        type: correctIndexes.length > 1 ? 'MULTI' : 'SINGLE',
+        options: cleanOptions,
+        correctOptionIndexes: correctIndexes,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Modal title="Add Question" onClose={onClose} width={520}>
+      <form onSubmit={handleSubmit}>
+        {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
+
+        <label className="field-label">Question</label>
+        <textarea
+          className="field-input"
+          rows={2}
+          value={questionText}
+          onChange={(e) => setQuestionText(e.target.value)}
+          autoFocus
+        />
+
+        <label className="field-label">Options (check the correct answer(s))</label>
+        {options.map((opt, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <input
+              type="checkbox"
+              checked={correctIndexes.includes(i)}
+              onChange={() => toggleCorrect(i)}
+              title="Mark as correct"
+            />
+            <input
+              type="text"
+              value={opt}
+              onChange={(e) => updateOption(i, e.target.value)}
+              placeholder={`Option ${i + 1}`}
+              style={{ flex: 1, padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
+            />
+            {options.length > 2 && (
+              <button
+                type="button"
+                className="btn secondary"
+                style={{ padding: '4px 10px', fontSize: 12 }}
+                onClick={() => removeOption(i)}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+        <button type="button" className="btn secondary" onClick={addOption} style={{ marginBottom: 16 }}>
+          + Add Option
+        </button>
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Adding...' : 'Add Question'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function CreateTestModal({ onClose, onCreate, courses, trainings }) {
+  const [form, setForm] = useState({ itemType: 'COURSE', itemId: '', title: '', passingScorePercent: 60 });
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const itemOptions = form.itemType === 'COURSE' ? courses : trainings;
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    if (!form.itemId || !form.title.trim()) {
+      setError('Select an item and enter a title.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onCreate(form);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Modal title="Create New Test" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
+
+        <label className="field-label">For</label>
+        <select
+          className="field-input"
+          value={form.itemType}
+          onChange={(e) => setForm({ ...form, itemType: e.target.value, itemId: '' })}
+        >
+          <option value="COURSE">Course</option>
+          <option value="TRAINING">Training</option>
+        </select>
+
+        <label className="field-label">{form.itemType === 'COURSE' ? 'Course' : 'Training'}</label>
+        <select
+          className="field-input"
+          value={form.itemId}
+          onChange={(e) => setForm({ ...form, itemId: e.target.value })}
+        >
+          <option value="">Select...</option>
+          {itemOptions.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.title}
+            </option>
+          ))}
+        </select>
+
+        <label className="field-label">Test Title</label>
+        <input
+          type="text"
+          className="field-input"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+        />
+
+        <label className="field-label">Passing Score (%)</label>
+        <input
+          type="number"
+          className="field-input"
+          min={0}
+          max={100}
+          value={form.passingScorePercent}
+          onChange={(e) => setForm({ ...form, passingScorePercent: e.target.value })}
+        />
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Creating...' : 'Create Test'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 
 export default function AdminTests() {
+  const confirm = useConfirm();
+  const toast = useToast();
+
   const [tests, setTests] = useState(null);
   const [courses, setCourses] = useState([]);
   const [trainings, setTrainings] = useState([]);
   const [error, setError] = useState('');
-
-  const [newTest, setNewTest] = useState({ itemType: 'COURSE', itemId: '', title: '', passingScorePercent: 60 });
-  const [creating, setCreating] = useState(false);
-
   const [selectedTest, setSelectedTest] = useState(null);
+  const [showCreateTest, setShowCreateTest] = useState(false);
+  const [showAddQuestion, setShowAddQuestion] = useState(false);
 
   const fetchTests = useCallback(() => {
     adminListTestsRequest()
@@ -36,33 +236,30 @@ export default function AdminTests() {
     adminListTrainingsRequest({ limit: 100 }).then(({ data }) => setTrainings(data.data.trainings));
   }, [fetchTests]);
 
-  async function handleCreate(e) {
-    e.preventDefault();
-    setError('');
-    if (!newTest.itemId || !newTest.title) {
-      setError('Select an item and enter a title.');
-      return;
-    }
-    setCreating(true);
+  async function handleCreate(form) {
     try {
-      await adminCreateTestRequest(newTest);
-      setNewTest({ itemType: 'COURSE', itemId: '', title: '', passingScorePercent: 60 });
+      await adminCreateTestRequest(form);
+      setShowCreateTest(false);
       fetchTests();
+      toast('Test created.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not create test.');
-    } finally {
-      setCreating(false);
+      toast(err.response?.data?.message || 'Could not create test.', 'error');
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this test?')) return;
+    const ok = await confirm('Delete this test? All questions will be lost.', {
+      danger: true,
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     try {
       await adminDeleteTestRequest(id);
       if (selectedTest?.id === id) setSelectedTest(null);
       fetchTests();
+      toast('Test deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Delete failed.');
+      toast(err.response?.data?.message || 'Delete failed.', 'error');
     }
   }
 
@@ -72,8 +269,9 @@ export default function AdminTests() {
       else await adminPublishTestRequest(test.id);
       fetchTests();
       if (selectedTest?.id === test.id) openTest(test.id);
+      toast(test.isPublished ? 'Test unpublished.' : 'Test published.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Action failed.');
+      toast(err.response?.data?.message || 'Action failed.', 'error');
     }
   }
 
@@ -82,88 +280,42 @@ export default function AdminTests() {
     setSelectedTest(data.data.test);
   }
 
-  async function handleAddQuestion() {
-    const questionText = window.prompt('Question text:');
-    if (!questionText) return;
-    const optionsRaw = window.prompt('Options, comma-separated (e.g. Paris,London,Berlin):');
-    if (!optionsRaw) return;
-    const options = optionsRaw.split(',').map((o) => o.trim()).filter(Boolean);
-    const correctRaw = window.prompt(
-      `Correct option number(s), comma-separated, 1-${options.length} (e.g. "1" or "1,3"):`
-    );
-    if (!correctRaw) return;
-    const correctOptionIndexes = correctRaw.split(',').map((n) => parseInt(n.trim(), 10) - 1);
-
+  async function handleAddQuestion(questionData) {
     try {
-      await adminAddQuestionRequest(selectedTest.id, {
-        questionText,
-        type: correctOptionIndexes.length > 1 ? 'MULTI' : 'SINGLE',
-        options,
-        correctOptionIndexes,
-      });
+      await adminAddQuestionRequest(selectedTest.id, questionData);
       openTest(selectedTest.id);
       fetchTests();
+      setShowAddQuestion(false);
+      toast('Question added.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not add question.');
+      toast(err.response?.data?.message || 'Could not add question.', 'error');
     }
   }
 
   async function handleDeleteQuestion(questionId) {
-    if (!window.confirm('Delete this question?')) return;
+    const ok = await confirm('Delete this question?', { danger: true, confirmLabel: 'Delete' });
+    if (!ok) return;
     try {
       await adminDeleteQuestionRequest(selectedTest.id, questionId);
       openTest(selectedTest.id);
       fetchTests();
+      toast('Question deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not delete question.');
+      toast(err.response?.data?.message || 'Could not delete question.', 'error');
     }
   }
 
   if (!tests) return <Loading />;
 
-  const itemOptions = newTest.itemType === 'COURSE' ? courses : trainings;
-
   return (
     <div>
-      <h1>Tests</h1>
-      {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
-
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Create New Test</h3>
-        <form onSubmit={handleCreate} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <select
-            value={newTest.itemType}
-            onChange={(e) => setNewTest({ ...newTest, itemType: e.target.value, itemId: '' })}
-          >
-            <option value="COURSE">Course</option>
-            <option value="TRAINING">Training</option>
-          </select>
-          <select value={newTest.itemId} onChange={(e) => setNewTest({ ...newTest, itemId: e.target.value })}>
-            <option value="">Select {newTest.itemType.toLowerCase()}...</option>
-            {itemOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.title}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Test title"
-            value={newTest.title}
-            onChange={(e) => setNewTest({ ...newTest, title: e.target.value })}
-          />
-          <input
-            type="number"
-            placeholder="Passing %"
-            value={newTest.passingScorePercent}
-            onChange={(e) => setNewTest({ ...newTest, passingScorePercent: e.target.value })}
-            style={{ width: 90 }}
-          />
-          <button className="btn" type="submit" disabled={creating}>
-            {creating ? 'Creating...' : 'Create Test'}
-          </button>
-        </form>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Tests</h1>
+        <button className="btn" onClick={() => setShowCreateTest(true)}>
+          + New Test
+        </button>
       </div>
+      {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
 
       <table className="data-table">
         <thead>
@@ -215,7 +367,7 @@ export default function AdminTests() {
         <div className="card" style={{ marginTop: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ margin: 0 }}>Questions: {selectedTest.title}</h3>
-            <button className="btn secondary" onClick={handleAddQuestion}>
+            <button className="btn secondary" onClick={() => setShowAddQuestion(true)}>
               + Add Question
             </button>
           </div>
@@ -250,6 +402,18 @@ export default function AdminTests() {
             </div>
           ))}
         </div>
+      )}
+
+      {showCreateTest && (
+        <CreateTestModal
+          onClose={() => setShowCreateTest(false)}
+          onCreate={handleCreate}
+          courses={courses}
+          trainings={trainings}
+        />
+      )}
+      {showAddQuestion && (
+        <AddQuestionModal onClose={() => setShowAddQuestion(false)} onAdd={handleAddQuestion} />
       )}
     </div>
   );

@@ -10,6 +10,9 @@ import {
   adminDeleteTaskRequest,
 } from '../services/trainings';
 import Loading from '../components/Loading.jsx';
+import Modal from '../components/Modal.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const inputStyle = {
   width: '100%',
@@ -19,10 +22,117 @@ const inputStyle = {
   marginBottom: 12,
 };
 
+function AddDayModal({ onClose, onAdd }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setSubmitting(true);
+    await onAdd({ title, description });
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal title="Add Day" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <label className="field-label">Day Title</label>
+        <input
+          type="text"
+          className="field-input"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder='e.g. "Introduction & Setup"'
+          autoFocus
+          required
+        />
+        <label className="field-label">Description (optional)</label>
+        <textarea
+          className="field-input"
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Adding...' : 'Add Day'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function AddTaskModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({ title: '', type: 'TEXT', content: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.title.trim()) return;
+    setSubmitting(true);
+    await onAdd(form);
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal title="Add Task" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <label className="field-label">Task Title</label>
+        <input
+          type="text"
+          className="field-input"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          autoFocus
+          required
+        />
+        <label className="field-label">Type</label>
+        <select
+          className="field-input"
+          value={form.type}
+          onChange={(e) => setForm({ ...form, type: e.target.value })}
+        >
+          <option value="TEXT">Text</option>
+          <option value="VIDEO">Video</option>
+          <option value="PDF">PDF</option>
+          <option value="LINK">Link</option>
+          <option value="ASSIGNMENT">Assignment</option>
+        </select>
+        <label className="field-label">
+          {form.type === 'TEXT' || form.type === 'ASSIGNMENT' ? 'Content / Instructions' : 'URL'}
+        </label>
+        <textarea
+          className="field-input"
+          rows={3}
+          value={form.content}
+          onChange={(e) => setForm({ ...form, content: e.target.value })}
+          placeholder={form.type === 'VIDEO' || form.type === 'PDF' || form.type === 'LINK' ? 'https://...' : ''}
+        />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Adding...' : 'Add Task'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function TrainingEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = id === 'new';
+  const confirm = useConfirm();
+  const toast = useToast();
 
   const [training, setTraining] = useState(null);
   const [form, setForm] = useState({
@@ -37,7 +147,9 @@ export default function TrainingEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+
+  const [showAddDay, setShowAddDay] = useState(false);
+  const [addTaskForDay, setAddTaskForDay] = useState(null);
 
   useEffect(() => {
     if (isNew) return;
@@ -67,7 +179,6 @@ export default function TrainingEditor() {
   async function handleSaveDetails(e) {
     e.preventDefault();
     setError('');
-    setMessage('');
     setSaving(true);
     try {
       if (isNew) {
@@ -76,7 +187,7 @@ export default function TrainingEditor() {
       } else {
         const { data } = await adminUpdateTrainingRequest(id, form);
         setTraining((prev) => ({ ...prev, ...data.data.training }));
-        setMessage('Training details saved.');
+        toast('Training details saved.');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Could not save training.');
@@ -85,51 +196,52 @@ export default function TrainingEditor() {
     }
   }
 
-  async function handleAddDay() {
-    const title = window.prompt('Day title (e.g. "Introduction & Setup"):');
-    if (!title) return;
+  async function handleAddDay({ title, description }) {
     try {
-      const { data } = await adminAddDayRequest(id, { title });
+      const { data } = await adminAddDayRequest(id, { title, description });
       setTraining(data.data.training);
+      setShowAddDay(false);
+      toast('Day added.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not add day.');
+      toast(err.response?.data?.message || 'Could not add day.', 'error');
     }
   }
 
   async function handleDeleteDay(dayId) {
-    if (!window.confirm('Delete this day and all its tasks?')) return;
+    const ok = await confirm('Delete this day and all its tasks? This cannot be undone.', {
+      danger: true,
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     try {
       const { data } = await adminDeleteDayRequest(id, dayId);
       setTraining(data.data.training);
+      toast('Day deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not delete day.');
+      toast(err.response?.data?.message || 'Could not delete day.', 'error');
     }
   }
 
-  async function handleAddTask(dayId) {
-    const title = window.prompt('Task title:');
-    if (!title) return;
-    const type = window.prompt('Task type (VIDEO / PDF / LINK / TEXT / ASSIGNMENT):', 'TEXT') || 'TEXT';
-    const content = window.prompt('Content (URL or instructions):', '') || '';
+  async function handleAddTask(taskForm) {
     try {
-      const { data } = await adminAddTaskRequest(id, dayId, {
-        title,
-        type: type.toUpperCase(),
-        content,
-      });
+      const { data } = await adminAddTaskRequest(id, addTaskForDay, taskForm);
       setTraining(data.data.training);
+      setAddTaskForDay(null);
+      toast('Task added.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not add task.');
+      toast(err.response?.data?.message || 'Could not add task.', 'error');
     }
   }
 
   async function handleDeleteTask(dayId, taskId) {
-    if (!window.confirm('Delete this task?')) return;
+    const ok = await confirm('Delete this task?', { danger: true, confirmLabel: 'Delete' });
+    if (!ok) return;
     try {
       const { data } = await adminDeleteTaskRequest(id, dayId, taskId);
       setTraining(data.data.training);
+      toast('Task deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not delete task.');
+      toast(err.response?.data?.message || 'Could not delete task.', 'error');
     }
   }
 
@@ -143,7 +255,6 @@ export default function TrainingEditor() {
       <h1>{isNew ? 'New Training' : `Edit: ${training?.title}`}</h1>
 
       {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
-      {message && <p style={{ color: '#16a34a', fontSize: 14 }}>{message}</p>}
 
       <form onSubmit={handleSaveDetails} style={{ maxWidth: 480 }}>
         <label style={{ fontSize: 13, color: '#6b7280' }}>Title</label>
@@ -197,7 +308,7 @@ export default function TrainingEditor() {
         <div style={{ marginTop: 40 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>Day-wise Schedule</h2>
-            <button className="btn secondary" onClick={handleAddDay}>
+            <button className="btn secondary" onClick={() => setShowAddDay(true)}>
               + Add Day
             </button>
           </div>
@@ -216,7 +327,7 @@ export default function TrainingEditor() {
                     Day {day.dayNumber}: {day.title}
                   </h3>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn secondary" onClick={() => handleAddTask(day._id)}>
+                    <button className="btn secondary" onClick={() => setAddTaskForDay(day._id)}>
                       + Task
                     </button>
                     <button className="btn secondary" onClick={() => handleDeleteDay(day._id)}>
@@ -250,6 +361,9 @@ export default function TrainingEditor() {
           </p>
         </div>
       )}
+
+      {showAddDay && <AddDayModal onClose={() => setShowAddDay(false)} onAdd={handleAddDay} />}
+      {addTaskForDay && <AddTaskModal onClose={() => setAddTaskForDay(null)} onAdd={handleAddTask} />}
     </div>
   );
 }

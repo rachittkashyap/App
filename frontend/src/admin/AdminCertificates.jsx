@@ -6,8 +6,12 @@ import {
   adminReinstateCertificateRequest,
 } from '../services/certificates';
 import Loading from '../components/Loading.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function AdminCertificates() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [certificates, setCertificates] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [search, setSearch] = useState('');
@@ -37,10 +41,16 @@ export default function AdminCertificates() {
   async function toggleStatus(cert) {
     try {
       if (cert.status === 'ISSUED') {
-        if (!window.confirm(`Revoke certificate ${cert.certificateId}?`)) return;
+        const ok = await confirm(`Revoke certificate ${cert.certificateId}?`, {
+          danger: true,
+          confirmLabel: 'Revoke',
+        });
+        if (!ok) return;
         await adminRevokeCertificateRequest(cert.id);
+        toast('Certificate revoked.');
       } else {
         await adminReinstateCertificateRequest(cert.id);
+        toast('Certificate reinstated.');
       }
       fetchCertificates(pagination.page);
     } catch (err) {

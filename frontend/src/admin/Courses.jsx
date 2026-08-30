@@ -7,8 +7,12 @@ import {
   adminUnpublishCourseRequest,
 } from '../services/courses';
 import Loading from '../components/Loading.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Courses() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [courses, setCourses] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [search, setSearch] = useState('');
@@ -51,11 +55,16 @@ export default function Courses() {
   }
 
   async function handleDelete(course) {
-    if (!window.confirm(`Delete "${course.title}"? This cannot be undone.`)) return;
+    const ok = await confirm(`Delete "${course.title}"? This cannot be undone.`, {
+      danger: true,
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     setActionError('');
     try {
       await adminDeleteCourseRequest(course.id);
       fetchCourses(pagination.page);
+      toast('Course deleted.');
     } catch (err) {
       setActionError(err.response?.data?.message || 'Delete failed.');
     }

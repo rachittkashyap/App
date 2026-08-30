@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { adminListPaymentsRequest, adminGetRevenueRequest, adminRefundPaymentRequest } from '../services/payments';
 import Loading from '../components/Loading.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const statusColor = {
   CREATED: 'gray',
@@ -10,6 +12,8 @@ const statusColor = {
 };
 
 export default function AdminPayments() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [status, setStatus] = useState('');
@@ -39,11 +43,16 @@ export default function AdminPayments() {
   }, [fetchOrders]);
 
   async function handleRefund(order) {
-    if (!window.confirm(`Refund ₹${(order.amount / 100).toFixed(2)} for "${order.itemTitle}"?`)) return;
+    const ok = await confirm(`Refund ₹${(order.amount / 100).toFixed(2)} for "${order.itemTitle}"?`, {
+      danger: true,
+      confirmLabel: 'Refund',
+    });
+    if (!ok) return;
     setRefunding(order._id);
     try {
       await adminRefundPaymentRequest(order._id);
       fetchOrders(pagination.page);
+      toast('Refund initiated.');
     } catch (err) {
       setError(err.response?.data?.message || 'Refund failed.');
     } finally {

@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { adminListSubmissionsRequest, adminReviewSubmissionRequest } from '../services/learning';
 import Loading from '../components/Loading.jsx';
+import Modal from '../components/Modal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const statusColor = {
   SUBMITTED: 'gray',
@@ -9,13 +11,101 @@ const statusColor = {
   FAILED: 'red',
 };
 
+function ReviewModal({ submission, onClose, onSubmit }) {
+  const [status, setStatus] = useState('PASSED');
+  const [score, setScore] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    await onSubmit({ status, score: score ? Number(score) : undefined, feedback });
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal title={`Review Submission - ${submission.student?.name}`} onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        {submission.textContent && (
+          <div style={{ marginBottom: 14 }}>
+            <label className="field-label">Submitted Text</label>
+            <p style={{ fontSize: 14, background: '#f9fafb', padding: 10, borderRadius: 8 }}>
+              {submission.textContent}
+            </p>
+          </div>
+        )}
+        {submission.fileUrl && (
+          <p style={{ marginBottom: 14 }}>
+            <a href={submission.fileUrl} target="_blank" rel="noreferrer">
+              View submitted file
+            </a>
+          </p>
+        )}
+
+        <label className="field-label">Result</label>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
+          <label style={{ fontSize: 14 }}>
+            <input
+              type="radio"
+              name="status"
+              value="PASSED"
+              checked={status === 'PASSED'}
+              onChange={(e) => setStatus(e.target.value)}
+            />{' '}
+            Pass
+          </label>
+          <label style={{ fontSize: 14 }}>
+            <input
+              type="radio"
+              name="status"
+              value="FAILED"
+              checked={status === 'FAILED'}
+              onChange={(e) => setStatus(e.target.value)}
+            />{' '}
+            Fail
+          </label>
+        </div>
+
+        <label className="field-label">Score (0-100, optional)</label>
+        <input
+          type="number"
+          className="field-input"
+          min={0}
+          max={100}
+          value={score}
+          onChange={(e) => setScore(e.target.value)}
+        />
+
+        <label className="field-label">Feedback (optional)</label>
+        <textarea
+          className="field-input"
+          rows={3}
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+        />
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Saving...' : 'Submit Review'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function AdminAssignments() {
+  const toast = useToast();
   const [submissions, setSubmissions] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [reviewing, setReviewing] = useState(null);
+  const [reviewTarget, setReviewTarget] = useState(null);
 
   const fetchSubmissions = useCallback(
     (page = 1) => {
@@ -36,22 +126,14 @@ export default function AdminAssignments() {
     fetchSubmissions(1);
   }, [fetchSubmissions]);
 
-  async function handleReview(id, reviewStatus) {
-    const score = window.prompt('Score (0-100, optional):', '');
-    const feedback = window.prompt('Feedback (optional):', '') || '';
-
-    setReviewing(id);
+  async function handleReviewSubmit(reviewData) {
     try {
-      await adminReviewSubmissionRequest(id, {
-        status: reviewStatus,
-        score: score ? Number(score) : undefined,
-        feedback,
-      });
+      await adminReviewSubmissionRequest(reviewTarget._id, reviewData);
+      setReviewTarget(null);
       fetchSubmissions(pagination.page);
+      toast('Review saved.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Review failed.');
-    } finally {
-      setReviewing(null);
+      toast(err.response?.data?.message || 'Review failed.', 'error');
     }
   }
 
@@ -114,20 +196,9 @@ export default function AdminAssignments() {
                     <span className={`badge ${statusColor[s.status] || 'gray'}`}>{s.status}</span>
                   </td>
                   <td>{s.score ?? '-'}</td>
-                  <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <button
-                      className="btn secondary"
-                      disabled={reviewing === s._id}
-                      onClick={() => handleReview(s._id, 'PASSED')}
-                    >
-                      Pass
-                    </button>
-                    <button
-                      className="btn secondary"
-                      disabled={reviewing === s._id}
-                      onClick={() => handleReview(s._id, 'FAILED')}
-                    >
-                      Fail
+                  <td>
+                    <button className="btn secondary" onClick={() => setReviewTarget(s)}>
+                      Review
                     </button>
                   </td>
                 </tr>
@@ -150,6 +221,14 @@ export default function AdminAssignments() {
             </button>
           </div>
         </>
+      )}
+
+      {reviewTarget && (
+        <ReviewModal
+          submission={reviewTarget}
+          onClose={() => setReviewTarget(null)}
+          onSubmit={handleReviewSubmit}
+        />
       )}
     </div>
   );

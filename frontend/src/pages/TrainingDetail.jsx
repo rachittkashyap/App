@@ -9,6 +9,7 @@ import {
   listAvailableTestsRequest,
 } from '../services/learning';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import Loading from '../components/Loading.jsx';
 import BuyButton from '../components/BuyButton.jsx';
 
@@ -74,6 +75,7 @@ export default function TrainingDetail() {
   const { slug } = useParams();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [training, setTraining] = useState(null);
   const [enrollment, setEnrollment] = useState(null);
@@ -124,9 +126,7 @@ export default function TrainingDetail() {
       const { data } = await markItemCompleteRequest(enrollment.id, taskId);
       setEnrollment((prev) => ({ ...prev, ...data.enrollment, progressPercent: data.progressPercent }));
       if (data.certificate) {
-        window.alert(
-          `🎉 Congratulations! You've completed this training and earned a certificate. Find it under Dashboard → Certificates.`
-        );
+        toast('🎉 Congratulations! You completed this training and earned a certificate.', 'success');
       }
     } catch (err) {
       setEnrollError(err.response?.data?.message || 'Could not update progress.');

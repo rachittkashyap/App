@@ -7,8 +7,12 @@ import {
   adminUnpublishTrainingRequest,
 } from '../services/trainings';
 import Loading from '../components/Loading.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Trainings() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [trainings, setTrainings] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [search, setSearch] = useState('');
@@ -51,11 +55,16 @@ export default function Trainings() {
   }
 
   async function handleDelete(training) {
-    if (!window.confirm(`Delete "${training.title}"? This cannot be undone.`)) return;
+    const ok = await confirm(`Delete "${training.title}"? This cannot be undone.`, {
+      danger: true,
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     setActionError('');
     try {
       await adminDeleteTrainingRequest(training.id);
       fetchTrainings(pagination.page);
+      toast('Training deleted.');
     } catch (err) {
       setActionError(err.response?.data?.message || 'Delete failed.');
     }

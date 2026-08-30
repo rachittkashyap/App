@@ -10,6 +10,9 @@ import {
   adminDeleteLessonRequest,
 } from '../services/courses';
 import Loading from '../components/Loading.jsx';
+import Modal from '../components/Modal.jsx';
+import { useConfirm } from '../context/ConfirmContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const inputStyle = {
   width: '100%',
@@ -19,10 +22,116 @@ const inputStyle = {
   marginBottom: 12,
 };
 
+function AddModuleModal({ onClose, onAdd }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setSubmitting(true);
+    await onAdd({ title, description });
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal title="Add Module" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <label className="field-label">Module Title</label>
+        <input
+          type="text"
+          className="field-input"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          autoFocus
+          required
+        />
+        <label className="field-label">Description (optional)</label>
+        <textarea
+          className="field-input"
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Adding...' : 'Add Module'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function AddLessonModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({ title: '', type: 'TEXT', content: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.title.trim()) return;
+    setSubmitting(true);
+    await onAdd(form);
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal title="Add Lesson" onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <label className="field-label">Lesson Title</label>
+        <input
+          type="text"
+          className="field-input"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          autoFocus
+          required
+        />
+        <label className="field-label">Type</label>
+        <select
+          className="field-input"
+          value={form.type}
+          onChange={(e) => setForm({ ...form, type: e.target.value })}
+        >
+          <option value="TEXT">Text</option>
+          <option value="VIDEO">Video</option>
+          <option value="PDF">PDF</option>
+          <option value="LINK">Link</option>
+          <option value="ASSIGNMENT">Assignment</option>
+        </select>
+        <label className="field-label">
+          {form.type === 'TEXT' || form.type === 'ASSIGNMENT' ? 'Content / Instructions' : 'URL'}
+        </label>
+        <textarea
+          className="field-input"
+          rows={3}
+          value={form.content}
+          onChange={(e) => setForm({ ...form, content: e.target.value })}
+          placeholder={form.type === 'VIDEO' || form.type === 'PDF' || form.type === 'LINK' ? 'https://...' : ''}
+        />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Adding...' : 'Add Lesson'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function CourseEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = id === 'new';
+  const confirm = useConfirm();
+  const toast = useToast();
 
   const [course, setCourse] = useState(null);
   const [form, setForm] = useState({
@@ -36,7 +145,9 @@ export default function CourseEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+
+  const [showAddModule, setShowAddModule] = useState(false);
+  const [addLessonForModule, setAddLessonForModule] = useState(null); // moduleId or null
 
   useEffect(() => {
     if (isNew) return;
@@ -65,7 +176,6 @@ export default function CourseEditor() {
   async function handleSaveDetails(e) {
     e.preventDefault();
     setError('');
-    setMessage('');
     setSaving(true);
     try {
       if (isNew) {
@@ -74,7 +184,7 @@ export default function CourseEditor() {
       } else {
         const { data } = await adminUpdateCourseRequest(id, form);
         setCourse((prev) => ({ ...prev, ...data.data.course }));
-        setMessage('Course details saved.');
+        toast('Course details saved.');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Could not save course.');
@@ -83,51 +193,52 @@ export default function CourseEditor() {
     }
   }
 
-  async function handleAddModule() {
-    const title = window.prompt('Module title:');
-    if (!title) return;
+  async function handleAddModule({ title, description }) {
     try {
-      const { data } = await adminAddModuleRequest(id, { title });
+      const { data } = await adminAddModuleRequest(id, { title, description });
       setCourse(data.data.course);
+      setShowAddModule(false);
+      toast('Module added.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not add module.');
+      toast(err.response?.data?.message || 'Could not add module.', 'error');
     }
   }
 
   async function handleDeleteModule(moduleId) {
-    if (!window.confirm('Delete this module and all its lessons?')) return;
+    const ok = await confirm('Delete this module and all its lessons? This cannot be undone.', {
+      danger: true,
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     try {
       const { data } = await adminDeleteModuleRequest(id, moduleId);
       setCourse(data.data.course);
+      toast('Module deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not delete module.');
+      toast(err.response?.data?.message || 'Could not delete module.', 'error');
     }
   }
 
-  async function handleAddLesson(moduleId) {
-    const title = window.prompt('Lesson title:');
-    if (!title) return;
-    const type = window.prompt('Lesson type (VIDEO / PDF / LINK / TEXT):', 'TEXT') || 'TEXT';
-    const content = window.prompt('Content (URL for VIDEO/PDF/LINK, or text for TEXT):', '') || '';
+  async function handleAddLesson(lessonForm) {
     try {
-      const { data } = await adminAddLessonRequest(id, moduleId, {
-        title,
-        type: type.toUpperCase(),
-        content,
-      });
+      const { data } = await adminAddLessonRequest(id, addLessonForModule, lessonForm);
       setCourse(data.data.course);
+      setAddLessonForModule(null);
+      toast('Lesson added.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not add lesson.');
+      toast(err.response?.data?.message || 'Could not add lesson.', 'error');
     }
   }
 
   async function handleDeleteLesson(moduleId, lessonId) {
-    if (!window.confirm('Delete this lesson?')) return;
+    const ok = await confirm('Delete this lesson?', { danger: true, confirmLabel: 'Delete' });
+    if (!ok) return;
     try {
       const { data } = await adminDeleteLessonRequest(id, moduleId, lessonId);
       setCourse(data.data.course);
+      toast('Lesson deleted.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not delete lesson.');
+      toast(err.response?.data?.message || 'Could not delete lesson.', 'error');
     }
   }
 
@@ -141,7 +252,6 @@ export default function CourseEditor() {
       <h1>{isNew ? 'New Course' : `Edit: ${course?.title}`}</h1>
 
       {error && <p style={{ color: '#dc2626', fontSize: 14 }}>{error}</p>}
-      {message && <p style={{ color: '#16a34a', fontSize: 14 }}>{message}</p>}
 
       <form onSubmit={handleSaveDetails} style={{ maxWidth: 480 }}>
         <label style={{ fontSize: 13, color: '#6b7280' }}>Title</label>
@@ -188,7 +298,7 @@ export default function CourseEditor() {
         <div style={{ marginTop: 40 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>Modules &amp; Lessons</h2>
-            <button className="btn secondary" onClick={handleAddModule}>
+            <button className="btn secondary" onClick={() => setShowAddModule(true)}>
               + Add Module
             </button>
           </div>
@@ -204,7 +314,7 @@ export default function CourseEditor() {
                   Module {mi + 1}: {module.title}
                 </h3>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn secondary" onClick={() => handleAddLesson(module._id)}>
+                  <button className="btn secondary" onClick={() => setAddLessonForModule(module._id)}>
                     + Lesson
                   </button>
                   <button className="btn secondary" onClick={() => handleDeleteModule(module._id)}>
@@ -237,6 +347,11 @@ export default function CourseEditor() {
             Publish this course from the Courses list once it has at least one module.
           </p>
         </div>
+      )}
+
+      {showAddModule && <AddModuleModal onClose={() => setShowAddModule(false)} onAdd={handleAddModule} />}
+      {addLessonForModule && (
+        <AddLessonModal onClose={() => setAddLessonForModule(null)} onAdd={handleAddLesson} />
       )}
     </div>
   );
