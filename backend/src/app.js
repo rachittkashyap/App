@@ -27,6 +27,7 @@ const adminPaymentRoutes = require('./routes/adminPayment.routes');
 const webhookRoutes = require('./routes/webhook.routes');
 const certificateRoutes = require('./routes/certificate.routes');
 const adminCertificateRoutes = require('./routes/adminCertificate.routes');
+const adminEmailLogRoutes = require('./routes/adminEmailLog.routes');
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin/payments', adminPaymentRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/admin/certificates', adminCertificateRoutes);
+app.use('/api/admin/email-logs', adminEmailLogRoutes);
 
 // All planned core phases are now mounted. Future additions (search/reports/
 // audit hardening in Phase 10, seed/testing in Phase 11) build on these.

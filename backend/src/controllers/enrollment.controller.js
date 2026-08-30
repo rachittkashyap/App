@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { findItem, getFlatSubItems, computeProgressPercent } = require('../utils/itemLookup');
 const { issueCertificateIfEligible } = require('../services/certificate.service');
+const { sendCertificateReadyEmail } = require('../services/email.service');
 
 // POST /api/enrollments  { itemType, itemId }
 async function enroll(req, res, next) {
@@ -147,6 +148,11 @@ async function markItemComplete(req, res, next) {
         itemId: enrollment.itemId,
         itemTitle: item.title,
       });
+      if (certificate) {
+        sendCertificateReadyEmail(student, certificate).catch((err) =>
+          console.error('Failed to queue certificate-ready email:', err.message)
+        );
+      }
     }
 
     success(res, {

@@ -49,6 +49,7 @@ import AdminTests from './admin/AdminTests.jsx';
 import AdminCertificates from './admin/AdminCertificates.jsx';
 import CertificateTemplate from './admin/CertificateTemplate.jsx';
 import AdminPayments from './admin/AdminPayments.jsx';
+import EmailLogs from './admin/EmailLogs.jsx';
 import AdminReports from './admin/Reports.jsx';
 
 export default function App() {
@@ -116,6 +117,7 @@ export default function App() {
             <Route path="certificates" element={<AdminCertificates />} />
             <Route path="certificates/template" element={<CertificateTemplate />} />
             <Route path="payments" element={<AdminPayments />} />
+            <Route path="email-logs" element={<EmailLogs />} />
             <Route path="reports" element={<AdminReports />} />
           </Route>
 

@@ -9,6 +9,7 @@ const links = [
   { to: '/admin/tests', label: 'Tests' },
   { to: '/admin/certificates', label: 'Certificates' },
   { to: '/admin/payments', label: 'Payments' },
+  { to: '/admin/email-logs', label: 'Email Logs' },
   { to: '/admin/reports', label: 'Reports' },
 ];
 

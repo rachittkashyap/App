@@ -2,7 +2,7 @@
 
 Full-stack MERN platform for online courses and virtual training/internship programs, being built phase-by-phase. See `PHASE_PLAN.md` for the full roadmap and current progress.
 
-## Status: Phase 8 complete — Certificates (auto-issue + PDF + QR verification)
+## Status: Phase 9 complete — Email System (Redis/BullMQ queue + worker)
 
 ## Project Structure
 

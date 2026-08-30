@@ -1,10 +1,12 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const Enrollment = require('../models/Enrollment');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { findItem } = require('../utils/itemLookup');
 const { getRazorpayClient } = require('../config/razorpay');
+const { sendPaymentConfirmationEmail } = require('../services/email.service');
 
 // POST /api/payments/create-order  { itemType, itemId }
 async function createOrder(req, res, next) {
@@ -131,6 +133,13 @@ async function verifyPayment(req, res, next) {
         itemType: order.itemType,
         itemId: order.itemId,
       });
+    }
+
+    const student = await User.findById(req.user.id);
+    if (student) {
+      sendPaymentConfirmationEmail(student, order).catch((err) =>
+        console.error('Failed to queue payment-confirmation email:', err.message)
+      );
     }
 
     success(res, { message: 'Payment verified successfully', order: order.toSafeJSON(), enrollment });

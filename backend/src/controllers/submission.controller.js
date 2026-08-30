@@ -1,8 +1,10 @@
 const Submission = require('../models/Submission');
 const Enrollment = require('../models/Enrollment');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { findItem, getFlatSubItems } = require('../utils/itemLookup');
+const { sendSubmissionReviewedEmail } = require('../services/email.service');
 
 // POST /api/submissions  { itemType, itemId, groupId, subItemId, textContent, fileUrl }
 async function submitAssignment(req, res, next) {
@@ -116,6 +118,14 @@ async function reviewSubmission(req, res, next) {
     submission.reviewedAt = new Date();
 
     await submission.save();
+
+    const student = await User.findById(submission.student);
+    if (student && (status === 'PASSED' || status === 'FAILED')) {
+      sendSubmissionReviewedEmail(student, submission).catch((err) =>
+        console.error('Failed to queue submission-reviewed email:', err.message)
+      );
+    }
+
     success(res, { submission });
   } catch (err) {
     next(err);

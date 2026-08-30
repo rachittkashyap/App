@@ -137,8 +137,27 @@ the broader file-upload polish pass) - the template currently supports text/colo
 branding, which covers the core "certificate looks professional and is verifiable"
 requirement from the spec.
 
-## PHASE 9 — Email System (Queue-based) (NEXT)
-## PHASE 10 — Search, Reports, Audit, Hardening
+## PHASE 9 — Email System (Queue-based) ✅ DONE
+- [x] Redis connection (lazy - app boots fine without `REDIS_URL`, falls back to the
+      dev-mode console-log behaviour used since Phase 2)
+- [x] BullMQ email queue with retry + exponential backoff (5 attempts: 5s/10s/20s/40s/80s)
+- [x] EmailJob model + in-process worker (`src/workers/email.worker.js`) that sends via
+      Nodemailer/SMTP and updates job status
+- [x] Moved every email (welcome, verify, reset, payment confirmation, submission
+      reviewed, certificate ready) from direct/console send to the queue
+- [x] Failed jobs keep their error message; BullMQ's built-in stalled-job recovery
+      handles workers that crash mid-job
+- [x] Admin: Email Logs page (`/admin/email-logs`) - search by status, see attempts and
+      error messages, manually retry any failed email
+
+**Setup required for real emails:** without `REDIS_URL` set, everything still works
+exactly as before (console-log fallback, marked "Sent" in the logs). To get real email
+delivery: add `REDIS_URL` (e.g. a free Upstash or Render Redis instance) and the SMTP
+variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) to Render's
+environment variables - most reliably a transactional provider like Brevo, SendGrid, or
+Gmail with an App Password.
+
+## PHASE 10 — Search, Reports, Audit, Hardening (NEXT)
 ## PHASE 11 — Testing, Seed Data, Deployment
 
 (Full detail of each phase is in the original planning doc shared in chat — this file gets updated with checkboxes as each phase ships.)
